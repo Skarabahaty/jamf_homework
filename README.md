@@ -12,19 +12,35 @@ This repository is a deliberately safe starter for governing GitHub App access w
 ## Bootstrap
 
 1. Copy `terraform/terraform.tfvars.example` to a local, ignored `terraform/terraform.tfvars`, replace placeholders with approved values, and provide `TF_VAR_github_token` through a short-lived token or CI secret. Never commit the copy.
-2. Ensure the token has the minimum required organization/repository permissions for the provider and that the GitHub App installations already exist.
-3. Initialize and import the existing repositories:
+2. Copy `terraform/backend.hcl.example` to ignored `terraform/backend.hcl` and fill in the approved, existing S3 bucket name and AWS region. Do not add AWS access keys to this file. The state bucket must be created and secured separately by the AWS platform team before backend initialization; this Terraform configuration does not create AWS resources.
+3. Ensure the GitHub token has the minimum required organization/repository permissions for the provider and that the GitHub App installations already exist.
+4. Initialize and import the existing repositories:
 
    ```shell
    cd terraform
-   terraform init
+   terraform init -backend-config=backend.hcl
    terraform import 'github_repository.managed["platform-infrastructure"]' platform-infrastructure
    terraform import 'github_repository.managed["service-catalog"]' service-catalog
    terraform plan
    ```
 
    Import every declared repository before the first apply. Resolve drift in a pull request; do not edit settings manually to make a plan pass.
-4. Set these repository or organization Actions variables: `GITHUB_ORGANIZATION`, `TF_REPOSITORIES`, `TF_APP_INSTALLATIONS`, and `TF_PROTECTED_BRANCHES`. The three `TF_*` values are JSON representations of the corresponding maps in `terraform.tfvars.example`; keeping them as nonsecret Actions variables makes the plan input visible and reviewable without committing organization-specific names. Set `GITHUB_TOKEN` as a secret and configure the `production` environment with required reviewers. A dedicated token stored as an organization secret is preferred for applying organization-level changes.
+5. Set these repository or organization Actions variables: `GITHUB_ORGANIZATION`, `TF_REPOSITORIES`, `TF_APP_INSTALLATIONS`, `TF_PROTECTED_BRANCHES`, `TF_STATE_BUCKET`, `TF_STATE_KEY`, and `AWS_REGION`. The three `TF_*` values are JSON representations of the corresponding maps in `terraform.tfvars.example`. Set `TF_PLAN_ROLE_ARN` and `TF_APPLY_ROLE_ARN` to the separately scoped AWS IAM role ARNs, and configure GitHub's OIDC provider and each role's trust policy for this repository. The plan role trust should accept only this repo's `pull_request` subject; the apply role is bound to the `production` GitHub environment subject, with that environment restricted to the protected `main` branch and required reviewers. The plan role needs state-object read and bucket listing permissions plus get/put/delete on only the corresponding `.tflock` object; it must not write the state object. The apply role needs state-object read/write and lock-object permissions, scoped to the configured key. Set `GITHUB_TOKEN` as a secret and configure the `production` environment with required reviewers. Never store AWS access keys in GitHub variables or repository files.
+
+## S3 remote state
+
+`terraform/versions.tf` declares an S3 backend with no hard-coded values; Terraform backend configuration cannot use normal Terraform variables. For local use, supply the ignored `backend.hcl` file with `terraform init -backend-config=backend.hcl`. The example uses S3 native lockfiles (`use_lockfile = true`), which requires Terraform 1.10 or newer. CI builds a short-lived backend config from `TF_STATE_BUCKET`, `TF_STATE_KEY`, and `AWS_REGION`; it uses AWS OIDC via `TF_PLAN_ROLE_ARN` or `TF_APPLY_ROLE_ARN` rather than long-lived AWS credentials. No account ID, bucket name, role ARN, or credentials are included in this repository.
+
+The PR check always formats and validates without contacting a backend. The authenticated remote-state plan runs only for same-repository pull requests when the bucket, key, region, and plan role variables exist; fork PRs do not receive AWS OIDC credentials and therefore get validation but no live remote plan. This is intentional: backend planning requires AWS access and S3 lockfile writes, so the plan role is limited to reading state and creating/removing the lock object, not writing state. Treat same-repository PR authors and workflow changes as trusted, and constrain AWS OIDC trust to the exact repository and `pull_request` subject. GitHub job permissions remain `contents: read` plus `id-token: write` solely on the authenticated plan/apply jobs; PR jobs have no GitHub contents or pull-request write permission. `id-token: write` only permits requesting a short-lived OIDC assertion; it does not grant GitHub repository write access. Until these AWS settings are configured, remote PR plans cannot run and a main-branch apply fails clearly rather than silently using local state.
+
+Before adopting remote state for an existing local workspace:
+
+1. Have the AWS platform team create the bucket separately with versioning enabled, server-side encryption, public access blocked, and narrowly scoped IAM. Keep the state object and lock object private; state may contain sensitive metadata even when provider credentials are marked sensitive.
+2. Back up the current state securely outside Git (for example, `terraform state pull` into an access-controlled location) and verify the backup. Confirm the target bucket/key is correct and the bucket is empty or contains this exact workspace's state.
+3. From `terraform/`, migrate deliberately with `terraform init -migrate-state -backend-config=backend.hcl`, review Terraform's migration prompt and completion output, then run `terraform state list` and `terraform plan`. Do not use `-force-copy` to bypass a warning or overwrite unrelated state.
+4. Enable/version the bucket's recovery process and test restoration. Keep prior state versions according to policy; never delete a state version or lock object manually to resolve a lock without investigating the active run first.
+
+For a new workspace with no local state, use `terraform init -backend-config=backend.hcl` instead (no `-migrate-state`). CI only initializes an already-migrated remote backend and never migrates state. Do not run `apply`, migration, or create AWS resources as part of preparing this repository.
 
 ## Ownership and review
 
