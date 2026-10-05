@@ -10,7 +10,7 @@ repositories = {
   service-catalog = {
     description = "Service catalog managed through GitOps"
     visibility  = "public"
-  }  
+  }
   never-gonna-give-you-up = {
     description = "Rolling catalog managed through GitOps"
     visibility  = "public"
@@ -34,7 +34,7 @@ protected_branches = {
     pattern                    = "main"
     required_approving_reviews = 1
     required_status_checks     = ["terraform"]
-  }  
+  }
   never-gonna-give-you-up = {
     pattern                    = "main"
     required_approving_reviews = 1
