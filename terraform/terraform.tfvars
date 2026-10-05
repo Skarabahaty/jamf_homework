@@ -45,3 +45,4 @@ protected_branches = {
     required_status_checks     = ["terraform"]
   }
 }
+
