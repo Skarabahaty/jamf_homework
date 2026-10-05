@@ -182,3 +182,4 @@ jobs:
           TF_VAR_app_installations: ${{ vars.TF_APP_INSTALLATIONS }}
           TF_VAR_protected_branches: ${{ vars.TF_PROTECTED_BRANCHES }}
         run: terraform apply -input=false -auto-approve
+

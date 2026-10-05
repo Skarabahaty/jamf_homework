@@ -1,7 +1,0 @@
-# Copy to backend.hcl (ignored by Git), replace these placeholders, and initialize
-# with: terraform init -backend-config=backend.hcl
-bucket       = "REPLACE_WITH_EXISTING_STATE_BUCKET"
-key          = "github-app-governance/terraform.tfstate"
-region       = "REPLACE_WITH_AWS_REGION"
-encrypt      = true
-use_lockfile = true
