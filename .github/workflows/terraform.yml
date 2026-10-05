@@ -105,7 +105,7 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
         env:
           TF_VAR_github_organization: ${{ vars.GITHUB_ORGANIZATION }}
-          TF_VAR_github_token: ${{ secrets.GITHUB_TOKEN }}
+          TF_VAR_github_token: ${{ secrets.TERRAFORM_GITHUB_TOKEN }}
           TF_VAR_repositories: ${{ vars.TF_REPOSITORIES }}
           TF_VAR_app_installations: ${{ vars.TF_APP_INSTALLATIONS }}
           TF_VAR_protected_branches: ${{ vars.TF_PROTECTED_BRANCHES }}
@@ -177,9 +177,8 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
         env:
           TF_VAR_github_organization: ${{ vars.GITHUB_ORGANIZATION }}
-          TF_VAR_github_token: ${{ secrets.GITHUB_TOKEN }}
+          TF_VAR_github_token: ${{ secrets.TERRAFORM_GITHUB_TOKEN }}
           TF_VAR_repositories: ${{ vars.TF_REPOSITORIES }}
           TF_VAR_app_installations: ${{ vars.TF_APP_INSTALLATIONS }}
           TF_VAR_protected_branches: ${{ vars.TF_PROTECTED_BRANCHES }}
         run: terraform apply -input=false -auto-approve
-

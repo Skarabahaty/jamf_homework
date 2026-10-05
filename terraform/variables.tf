@@ -9,7 +9,7 @@ variable "github_organization" {
 }
 
 variable "github_token" {
-  description = "Token used by Terraform. Supply through TF_VAR_github_token or CI secrets; never commit it."
+  description = "User-authenticated GitHub token for repository administration and app-installation management. Do not use the Actions GITHUB_TOKEN or an installation token."
   type        = string
   sensitive   = true
   default     = null
