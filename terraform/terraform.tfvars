@@ -23,7 +23,7 @@ app_installations = {
     repositories    = ["service-catalog", "never-gonna-give-you-up"]
   }
   today_i_learned = {
-    installation_id = 166419117
+    installation_id = 166638533
     repositories    = ["platform-infrastructure", "service-catalog"]
   }
 }
