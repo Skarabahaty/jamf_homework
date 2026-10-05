@@ -33,6 +33,7 @@ This repository is a deliberately safe starter for governing GitHub App access w
 
 - `Resource not accessible by integration` while refreshing `github_branch_protection` means the Terraform credential lacks repository administration access. Confirm `TERRAFORM_GITHUB_TOKEN` is a user token with administration permissions and organization approval; expanding the workflow's built-in `GITHUB_TOKEN` permissions is not a substitute.
 - A 404 for `GET /user/installations/<id>/repositories` can mean that the credential is an installation token rather than the required user-authenticated token, the token's user cannot access that installation, or the installation ID is wrong. Verify the ID in the target organization and verify the token user's access to that installation. Do not remove the Terraform resource or ignore the read error to force an apply.
+- If AWS returns `Not authorized to perform sts:AssumeRoleWithWebIdentity` even though the provider client ID and role trust look correct, compare the safe `Show apply OIDC identity claims` output (`iss`, `aud`, `sub`, and `event_name`) with the IAM OIDC provider and role conditions. For this repository's apply job, expect `iss=https://token.actions.githubusercontent.com`, `aud=sts.amazonaws.com`, `event_name=push`, and `sub=repo:Skarabahaty@93994708/jamf_homework@1402294906:environment:production`. Never print or upload the raw OIDC token.
 
 ## S3 remote state
 
