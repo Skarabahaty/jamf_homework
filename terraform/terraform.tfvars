@@ -18,9 +18,13 @@ repositories = {
 }
 
 app_installations = {
-  security-scanner = {
-    installation_id = 166419116 # Replace with the real installation ID.
+  linear_code = {
+    installation_id = 166419116
     repositories    = ["service-catalog", "never-gonna-give-you-up"]
+  }
+  today_i_learned = {
+    installation_id = 166419117
+    repositories    = ["platform-infrastructure", "service-catalog"]
   }
 }
 
