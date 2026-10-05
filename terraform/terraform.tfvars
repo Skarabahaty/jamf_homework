@@ -24,7 +24,7 @@ app_installations = {
   }
   today_i_learned = {
     installation_id = 166638533
-    repositories    = ["platform-infrastructure", "service-catalog"]
+    repositories    = ["platform-infrastructure"]
   }
 }
 
