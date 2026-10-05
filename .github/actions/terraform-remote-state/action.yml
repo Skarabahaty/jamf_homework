@@ -1,0 +1,72 @@
+name: Configure AWS and Terraform remote state
+description: Assume an AWS role with GitHub OIDC and initialize the configured S3 backend.
+inputs:
+  role-arn:
+    description: AWS IAM role ARN for this job.
+    required: true
+  aws-region:
+    description: AWS region containing the state bucket.
+    required: true
+  state-bucket:
+    description: Existing S3 state bucket.
+    required: true
+  state-key:
+    description: S3 object key for this Terraform state.
+    required: true
+  working-directory:
+    description: Directory containing the Terraform configuration.
+    required: false
+    default: terraform
+runs:
+  using: composite
+  steps:
+    - name: Check remote state inputs
+      shell: bash
+      env:
+        ROLE_ARN: ${{ inputs.role-arn }}
+        AWS_REGION: ${{ inputs.aws-region }}
+        TF_STATE_BUCKET: ${{ inputs.state-bucket }}
+        TF_STATE_KEY: ${{ inputs.state-key }}
+      run: |
+        python3 - <<'PY'
+        import os
+
+        required = ("ROLE_ARN", "AWS_REGION", "TF_STATE_BUCKET", "TF_STATE_KEY")
+        missing = [name for name in required if not os.environ.get(name)]
+        if missing:
+            raise SystemExit(f"Missing required remote-state inputs: {', '.join(missing)}")
+        PY
+    - name: Configure AWS credentials with OIDC
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.role-arn }}
+        aws-region: ${{ inputs.aws-region }}
+        audience: sts.amazonaws.com
+        output-env-credentials: true
+    - name: Create temporary backend config
+      shell: bash
+      env:
+        TF_STATE_BUCKET: ${{ inputs.state-bucket }}
+        TF_STATE_KEY: ${{ inputs.state-key }}
+        AWS_REGION: ${{ inputs.aws-region }}
+      run: |
+        python3 - <<'PY'
+        import json
+        import os
+        from pathlib import Path
+
+        config = {
+            "bucket": os.environ["TF_STATE_BUCKET"],
+            "key": os.environ["TF_STATE_KEY"],
+            "region": os.environ["AWS_REGION"],
+            "encrypt": True,
+            "use_lockfile": True,
+        }
+        Path(os.environ["RUNNER_TEMP"], "backend.json").write_text(
+            json.dumps(config) + "\n", encoding="utf-8"
+        )
+        PY
+    - name: Initialize Terraform remote backend
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: terraform init -input=false -backend-config="$RUNNER_TEMP/backend.json"
