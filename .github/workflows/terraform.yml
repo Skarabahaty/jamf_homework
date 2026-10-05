@@ -71,6 +71,8 @@ jobs:
         with:
           role-to-assume: ${{ vars.TF_PLAN_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
+          audience: sts.amazonaws.com
+          output-env-credentials: true
       - name: Create temporary backend config
         env:
           TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
@@ -143,6 +145,8 @@ jobs:
         with:
           role-to-assume: ${{ vars.TF_APPLY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
+          audience: sts.amazonaws.com
+          output-env-credentials: true
       - name: Create temporary backend config
         env:
           TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
