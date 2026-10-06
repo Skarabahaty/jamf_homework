@@ -15,16 +15,12 @@ repositories = {
     description = "Rolling catalog managed through GitOps"
     visibility  = "public"
   }
-  never-gonna-let-you-down = {
-    description = "Rolling outrolling managed through GitOps"
-    visibility  = "public"
-  }
 }
 
 app_installations = {
   linear_code = {
     installation_id = 166419116
-    repositories    = ["service-catalog", "never-gonna-give-you-up", "never-gonna-let-you-down"]
+    repositories    = ["service-catalog"]
   }
   today_i_learned = {
     installation_id = 166638533
@@ -44,11 +40,6 @@ protected_branches = {
     required_status_checks     = ["terraform"]
   }
   never-gonna-give-you-up = {
-    pattern                    = "main"
-    required_approving_reviews = 1
-    required_status_checks     = ["terraform"]
-  }
-  never-gonna-let-you-down = {
     pattern                    = "main"
     required_approving_reviews = 1
     required_status_checks     = ["terraform"]
