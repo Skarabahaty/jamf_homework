@@ -28,16 +28,6 @@ variable "repositories" {
     allow_rebase_merge     = optional(bool, false)
     delete_branch_on_merge = optional(bool, true)
   }))
-
-  validation {
-    condition     = length(var.repositories) >= 2
-    error_message = "At least two repositories must be governed."
-  }
-
-  validation {
-    condition     = alltrue([for name, repo in var.repositories : contains(["public", "private", "internal"], repo.visibility)])
-    error_message = "Each repository visibility must be public, private, or internal."
-  }
 }
 
 variable "app_installations" {
