@@ -1,0 +1,37 @@
+# Copy to terraform.tfvars and replace every placeholder with values from a test org.
+github_organization = "REPLACE_WITH_ORGANIZATION"
+
+repositories = {
+  repo-one = {
+    description = "First repository governed by Terraform"
+    visibility  = "private"
+  }
+  repo-two = {
+    description = "Second repository governed by Terraform"
+    visibility  = "private"
+  }
+}
+
+app_installations = {
+  app_alpha = {
+    installation_id = 11111111 # Replace with the real installation ID.
+    repositories    = ["repo-one", "repo-two"]
+  }
+  app_beta = {
+    installation_id = 22222222 # Replace with the real installation ID.
+    repositories    = ["repo-two"]
+  }
+}
+
+protected_branches = {
+  repo-one = {
+    pattern                    = "main"
+    required_approving_reviews = 1
+    required_status_checks     = ["terraform"]
+  }
+  repo-two = {
+    pattern                    = "main"
+    required_approving_reviews = 1
+    required_status_checks     = ["terraform"]
+  }
+}

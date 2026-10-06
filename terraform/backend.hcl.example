@@ -1,0 +1,6 @@
+# Copy to backend.hcl and provide the existing private state bucket and region.
+bucket       = "REPLACE_WITH_EXISTING_STATE_BUCKET"
+key          = "github-app-governance/terraform.tfstate"
+region       = "REPLACE_WITH_AWS_REGION"
+encrypt      = true
+use_lockfile = true
