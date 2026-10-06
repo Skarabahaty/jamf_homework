@@ -27,10 +27,6 @@ resource "github_repository" "managed" {
   allow_merge_commit     = each.value.allow_merge_commit
   allow_rebase_merge     = each.value.allow_rebase_merge
   delete_branch_on_merge = each.value.delete_branch_on_merge
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 # The allow-list is authoritative: removing a repository from an app's set
